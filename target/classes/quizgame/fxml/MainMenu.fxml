@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="quizgame.fxml.MainMenuController"
+      spacing="10" padding="20">
+    <children>
+        <Label text="Quizzits (FXML Menu)"/>
+        <Button text="Create Deck" onAction="#onCreateDeck"/>
+        <Button text="Manage Decks" onAction="#onManageDecks"/>
+        <Button text="Start Quiz" onAction="#onStartQuiz"/>
+        <Button text="Exit" onAction="#onExit"/>
+    </children>
+</VBox>

@@ -1,0 +1,128 @@
+/* Simple, clean student theme */
+.root {
+    -fx-font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+    -fx-padding: 8;
+}
+
+.button {
+    -fx-padding: 8 14 8 14;
+    -fx-background-radius: 8;
+}
+
+
+.question-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.list-view {
+    -fx-background-insets: 0;
+}
+
+.text-field {
+    -fx-background-radius: 8;
+    -fx-padding: 6 10 6 10;
+}
+
+
+/* ===== macOS-like Sidebar ===== */
+.sidebar {
+    -fx-background-color: linear-gradient(to bottom, #fafafa, #f3f3f3);
+    -fx-min-width: 220;
+    -fx-border-color: #e6e6e6;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #222;
+    -fx-padding: 0 0 8 4;
+}
+
+.sidebar-section {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #666;
+    -fx-padding: 12 0 6 8;
+    -fx-letter-spacing: 0.5px;
+    -fx-text-transform: uppercase;
+}
+
+.sidebar-item {
+    -fx-background-color: transparent;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 6 8 6 6;
+    -fx-background-radius: 10;
+}
+
+.sidebar-item:hover {
+    -fx-background-color: rgba(0,0,0,0.05);
+}
+
+.sidebar-item-selected {
+    -fx-background-color: rgba(0,0,0,0.06);
+}
+
+.sidebar-icon {
+    -fx-font-size: 12px;
+    -fx-opacity: 0.85;
+}
+
+/* Center text styles */
+.headline { -fx-font-size: 20px; -fx-font-weight: bold; }
+.subtle { -fx-text-fill: #666; }
+
+
+/* Center container cards (light Apple-like look) */
+.toolbar {
+    -fx-padding: 8;
+    -fx-background-color: rgba(0,0,0,0.03);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(0,0,0,0.05);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-spacing: 8;
+}
+
+
+/* ===== Readability Upgrade (Larger UI) ===== */
+.root {
+    -fx-font-family: "Segoe UI", "SF Pro Text", "Roboto", Arial, sans-serif;
+    -fx-font-size: 16px; /* base font size */
+}
+
+.button {
+    -fx-font-size: 15px;
+    -fx-padding: 10 16 10 16;
+}
+
+.text-field, .combo-box, .list-view {
+    -fx-font-size: 15px;
+}
+
+.text-field {
+    -fx-background-radius: 10;
+    -fx-padding: 10 12 10 12;
+}
+
+.combo-box {
+    -fx-background-radius: 10;
+}
+
+.list-view .list-cell {
+    -fx-font-size: 15px;
+    -fx-padding: 8 10 8 10;
+}
+
+/* Sidebar tweaks for readability */
+.sidebar {
+    -fx-min-width: 260; /* wider for text */
+}
+.sidebar-title { -fx-font-size: 20px; }
+.sidebar-icon { -fx-font-size: 14px; }
+.sidebar-item { -fx-padding: 10 10 10 8; }
+
+/* Headings and quiz text */
+.headline { -fx-font-size: 22px; -fx-font-weight: bold; }
+.question-label { -fx-font-size: 20px; -fx-font-weight: bold; }

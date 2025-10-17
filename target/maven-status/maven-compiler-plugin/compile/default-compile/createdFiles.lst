@@ -1,0 +1,13 @@
+quizgame\ScreenRouter.class
+quizgame\App.class
+quizgame\storage\StorageService.class
+quizgame\fxml\MainMenuController.class
+quizgame\SidebarMain.class
+quizgame\model\Deck.class
+quizgame\FxmlMainMenuLoader.class
+quizgame\storage\StorageService$1.class
+quizgame\util\StudentLogger.class
+quizgame\model\Flashcard.class
+quizgame\Styles.class
+quizgame\MacShell.class
+quizgame\model\QuizManager.class
