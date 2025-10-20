@@ -62,14 +62,14 @@ public class SidebarMain {
         Button exit = sidebarItem("✕", "Exit");
         exit.setOnAction(exceptionObj -> stage.close());
 
-        Region spacer = new Region();  
-        VBox.setVgrow(spacer, Priority.ALWAYS);
+      //  Region spacer = new Region();  
+      //  VBox.setVgrow(spacer, Priority.ALWAYS);
 
         sidebar.getChildren().addAll(
             appTitle,
             home,
             startQuiz,
-            spacer,
+       //     spacer,
             library,
             createDeck,
             manageDecks,
@@ -143,14 +143,14 @@ public class SidebarMain {
         javafx.scene.control.Button exit = sidebarItem("✕", "Exit");
         exit.setOnAction(exceptionObj -> stage.close());
 
-        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();  
-        javafx.scene.layout.VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+      //  javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();  
+      //  javafx.scene.layout.VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
         sidebar.getChildren().addAll(
             appTitle,
             home,
             startQuiz,
-            spacer,
+          //  spacer,
             library,
             createDeck,
             manageDecks,
