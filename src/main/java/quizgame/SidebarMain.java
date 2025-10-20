@@ -3,17 +3,16 @@
  * File: SidebarMain.java
  * ===============================================================
  */
-
 package quizgame;
 
 import quizgame.util.StudentLogger;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
+import javafx.scene.Scene; // only for getWindow cast
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderPane; // not required but kept for future
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -33,39 +32,21 @@ public class SidebarMain {
         this.router = router;
     }
 
-    /** Builds the Home scene. */
-    public Scene build(Stage stage) {
-        // Default to HOME when building this main scene
+    /** Builds the Home scene (used by ScreenRouter#getPrimaryScene). */
+    public javafx.scene.Scene build(Stage stage) {
         currentActive = Active.HOME;
-        return buildInternal(stage);
-    }
-
-    /** Internal builder used by both build() and other entry points. */
-    private Scene buildInternal(Stage stage) {
-        StudentLogger.enter("names#buildInternal");
-        BorderPane root = new BorderPane();
-
-        // ==== LEFT SIDEBAR ===================================================
-        VBox sidebar = buildSidebar(stage); // uses currentActive to preselect
-        root.setLeft(sidebar);
-
-        // ==== CENTER CONTENT (example home center) ===========================
+        // The center content is built by ScreenRouter#getPrimaryScene,
+        // so this class normally just builds sidebars. Keeping this here
+        // for compatibility with earlier code that calls build(stage).
+        // You can still show a simple welcome if desired.
         VBox center = new VBox(10);
         center.setPadding(new Insets(24));
-        Label welcome = new Label("Welcome to Quizzits");
-        welcome.getStyleClass().add("headline");
-        Label hint = new Label("Use the sidebar to Start Quiz or manage your decks.");
-        hint.getStyleClass().add("subtle");
-        center.getChildren().addAll(welcome, hint);
-        root.setCenter(center);
-
-        Scene scene = new Scene(root, 820, 520);
-        Styles.apply(scene); // ensure styles.css is loaded
-        StudentLogger.step("About to return from method.");
-        return scene;
+        center.getChildren().add(new Label("Welcome to Quizzits"));
+        MacShell shell = new MacShell(router, stage);
+        return shell.sceneWith(center);
     }
 
-    /** Builds just the sidebar (signature unchanged for MacShell). */
+    /** Builds just the sidebar (signature unchanged for callers like MacShell). */
     public VBox buildSidebar(Stage stage) {
         StudentLogger.enter("names#buildSidebar");
 
@@ -78,15 +59,14 @@ public class SidebarMain {
 
         Button home = sidebarItem("🏠", "Home");
         home.setOnAction(e -> {
-            // Set selection, then navigate
             currentActive = Active.HOME;
-            stage.setScene(this.buildInternal(stage));
+            stage.setScene(router.getPrimaryScene(stage));
         });
 
         Button startQuiz = sidebarItem("▶", "Start Quiz");
         startQuiz.setOnAction(e -> {
             currentActive = Active.START_QUIZ;
-            stage.setScene(router.startQuizScene(stage)); // original signature
+            stage.setScene(router.startQuizScene(stage));
         });
 
         Label library = new Label("Library");
@@ -95,20 +75,20 @@ public class SidebarMain {
         Button createDeck = sidebarItem("≡", "Create Deck");
         createDeck.setOnAction(e -> {
             currentActive = Active.CREATE_DECK;
-            stage.setScene(router.createDeckScene(stage)); // original signature
+            stage.setScene(router.createDeckScene(stage));
         });
 
         Button manageDecks = sidebarItem("✎", "Manage Decks");
         manageDecks.setOnAction(e -> {
             currentActive = Active.MANAGE_DECKS;
-            stage.setScene(router.manageDecksScene(stage)); // original signature
+            stage.setScene(router.manageDecksScene(stage));
         });
 
         Button exit = sidebarItem("✕", "Exit");
         exit.setOnAction(e -> stage.close());
 
         sidebar.getChildren().addAll(
-                appTitle,
+               // appTitle,
                 home,
                 startQuiz,
                 library,
@@ -117,9 +97,10 @@ public class SidebarMain {
                 exit
         );
 
-        // Apply the selected pill based on currentActive
+        // Apply/restore selected pill
         applySelected(currentActive, home, startQuiz, createDeck, manageDecks);
 
+        StudentLogger.step("About to return from method.");
         return sidebar;
     }
 
@@ -134,7 +115,7 @@ public class SidebarMain {
 
         Button btn = new Button();
         btn.setGraphic(box);
-        btn.getStyleClass().addAll("sidebar-item"); // base class for CSS
+        btn.getStyleClass().addAll("sidebar-item");
         btn.setMaxWidth(Double.MAX_VALUE);
         return btn;
     }
@@ -142,7 +123,6 @@ public class SidebarMain {
     /** Apply the 'sidebar-item-selected' class to the matching button. */
     private void applySelected(Active active, Button home, Button startQuiz,
                                Button createDeck, Button manageDecks) {
-        // clear all
         home.getStyleClass().remove("sidebar-item-selected");
         startQuiz.getStyleClass().remove("sidebar-item-selected");
         createDeck.getStyleClass().remove("sidebar-item-selected");
@@ -153,7 +133,7 @@ public class SidebarMain {
             case START_QUIZ -> startQuiz.getStyleClass().add("sidebar-item-selected");
             case CREATE_DECK -> createDeck.getStyleClass().add("sidebar-item-selected");
             case MANAGE_DECKS -> manageDecks.getStyleClass().add("sidebar-item-selected");
-            case NONE -> { /* nothing selected */ }
+            case NONE -> {}
         }
     }
 }

@@ -1,21 +1,25 @@
 /*
  * ===============================================================
  * File: Styles.java
+ * Simple helper to attach stylesheets.
  * ===============================================================
  */
-
 package quizgame;
-import quizgame.util.StudentLogger;  
 
 import javafx.scene.Scene;
 
-public class Styles {
+public final class Styles {
+    private Styles() {}
 
     public static void apply(Scene scene) {
-        StudentLogger.enter("names#apply");  
         var url = Styles.class.getResource("styles.css");
-        if (url != null) {  
-            scene.getStylesheets().add(url.toExternalForm());  
+        if (url != null) {
+            String css = url.toExternalForm();
+            if (!scene.getStylesheets().contains(css)) {
+                scene.getStylesheets().add(css);
+            }
+        } else {
+            System.err.println("[Styles] styles.css not found on classpath under quizgame/");
         }
     }
 }

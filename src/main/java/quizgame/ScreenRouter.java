@@ -1,28 +1,22 @@
 /*
  * =======================  STUDENT NOTES  =======================
  * File: ScreenRouter.java
- * What is this?  --> This file is part of the QuizGame app.
- * Why do we care? --> We're practicing reading Java + JavaFX projects.
- *
- * Reading tips:
- *  1) Skim class names and fields first.
- *  2) Read method headers to see inputs/outputs.
- *  3) Only then read the body and follow the comments.
- *
- * TODO(you): As you read, write down 1-2 questions per method.
- * Hint: If something looks "magical", search where it's created/used.
+ * Central place that builds center content for each page and wraps it
+ * with the mac-style shell so all screens have the same size/layout.
  * ===============================================================
  */
-
 package quizgame;
-import quizgame.util.StudentLogger;  // helper for step-by-step logs
+
+import quizgame.util.StudentLogger;
 
 import quizgame.model.Deck;
 import quizgame.model.Flashcard;
 import quizgame.model.QuizManager;
 import quizgame.storage.StorageService;
+
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -30,309 +24,317 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import javafx.geometry.Pos;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 
-
-/**
- * ScreenRouter
- * ------------
- * Central place that builds center content for each page and wraps it
- * with the mac-style shell so all screens have the same size/layout.
- */
 public class ScreenRouter {
 
-    private final StorageService storage = new StorageService();  // Object creation: why do we need a new instance here?
+    private final StorageService storage = new StorageService();
 
-    // HOME: prefer sidebar home scene (welcome)
-/**
- * STUDENT NOTE: What does `getPrimaryScene()` do?
- * - Summarize the purpose inputFile your own words.
- * - Identify important inputs/outputs.
- * Study Tip: Trace a tiny example through this method.
- */
+    // =========================== HOME ============================
+
     public Scene getPrimaryScene(Stage stage) {
-        StudentLogger.enter("names#getPrimaryScene");  // we just entered this method
-        // Use the SidebarMain home view (which already applies Styles).
-        try {
-            StudentLogger.step("About to return from method.");  // check what value we return next
-            return new SidebarMain(this).build(stage);  // Return value: where is it used next?
-        } catch (Exception ignored) {
-}
-        // Fallback: simple label inputFile the shell
-        VBox center = new VBox(10);  // Object creation: why do we need a new instance here?
-        center.setPadding(new Insets(24));
-        center.getChildren().add(new Label("Welcome to Quizzits"));  // We're adding to a collection; note the order & size.
-        MacShell shell = new MacShell(this, stage);  // Object creation: why do we need a new instance here?
-        StudentLogger.step("About to return from method.");  // check what value we return next
-        return shell.sceneWith(center);  // Return value: where is it used next?
+        StudentLogger.enter("names#getPrimaryScene");
+        // Let SidebarMain build a basic welcome scene via MacShell
+        StudentLogger.step("About to return from method.");
+        return new SidebarMain(this).build(stage);
     }
 
-/**
- * STUDENT NOTE: What does `createDeckScene()` do?
- * - Summarize the purpose inputFile your own words.
- * - Identify important inputs/outputs.
- * Study Tip: Trace a tiny example through this method.
- */
+    // ====================== CREATE DECK ==========================
+
     public Scene createDeckScene(Stage stage) {
-        StudentLogger.enter("names#createDeckScene");  // we just entered this method
-        VBox center = new VBox(12);  // Object creation: why do we need a new instance here?
-        Label title = new Label("Create Deck");  // Object creation: why do we need a new instance here?
-        title.getStyleClass().add("headline");  // We're adding to a collection; note the order & size.
-        TextField deckName = new TextField();  // Object creation: why do we need a new instance here?
-        deckName.setPromptText("Enter deckObject name (must be unique)");
+        StudentLogger.enter("names#createDeckScene");
 
-        HBox buttons = new HBox(8);  // Object creation: why do we need a new instance here?
-        Button create = new Button("Create");  // Object creation: why do we need a new instance here?
-        Button back = new Button("Back");  // Object creation: why do we need a new instance here?
-        buttons.getChildren().addAll(create, back);
+        // Toolbar
+        HBox toolbar = makeToolbar("Create Deck");
 
-        Label status = new Label("");  // Object creation: why do we need a new instance here?
+        // Card
+        VBox card = makeCard();
+        Label nameLabel = makeFieldLabel("Name");
+        TextField deckName = new TextField();
+        deckName.setPromptText("Enter deck name (must be unique)");
 
-        create.setOnAction(exceptionObj -> {
+        // Buttons
+        Button create = new Button("Create");
+        create.getStyleClass().add("primary");
+        Button back = new Button("Back");
+        back.getStyleClass().add("secondary");
+
+        HBox buttons = new HBox(8, back, create);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+
+        // Status banner
+        Label status = makeBanner();
+
+        // Wire actions
+        create.setOnAction(e -> {
             String name = deckName.getText().trim();
-            if (name.isEmpty()) {  // decision point — what happens inputFile each branch?
-                status.setText("Deck name cannot be empty.");
-                StudentLogger.step("About to return from method.");  // check what value we return next
+            if (name.isEmpty()) {
+                showError(status, "Deck name cannot be empty.");
                 return;
             }
-            if (storage.deckExists(name)) {  // decision point — what happens inputFile each branch?
-                status.setText("A deckObject with that name already exists.");
-                StudentLogger.step("About to return from method.");  // check what value we return next
+            if (storage.deckExists(name)) {
+                showError(status, "A deck with that name already exists.");
                 return;
             }
-            Deck d = new Deck(name, new ArrayList<>());  // Object creation: why do we need a new instance here?
+            Deck d = new Deck(name, new ArrayList<>());
             boolean ok = storage.saveDeck(d);
-            status.setText(ok ? "Deck created successfully." : "Failed to save deckObject.");
+            if (ok) {
+                showOk(status, "Deck created successfully.");
+                deckName.clear();
+                deckName.requestFocus();
+            } else {
+                showError(status, "Failed to save deck.");
+            }
         });
 
-        back.setOnAction(exceptionObj -> stage.setScene(getPrimaryScene(stage)));
+        back.setOnAction(e -> stage.setScene(getPrimaryScene(stage)));
 
-        center.getChildren().addAll(title, deckName, buttons, status);
-        MacShell shell = new MacShell(this, stage);  // Object creation: why do we need a new instance here?
-        StudentLogger.step("About to return from method.");  // check what value we return next
-        return shell.sceneWith(center);  // Return value: where is it used next?
+        card.getChildren().addAll(nameLabel, deckName, buttons, status);
+
+        VBox center = wrap(toolbar, card);
+        MacShell shell = new MacShell(this, stage);
+        StudentLogger.step("About to return from method.");
+        return shell.sceneWith(center);
     }
 
-/**
- * STUDENT NOTE: What does `manageDecksScene()` do?
- * - Summarize the purpose inputFile your own words.
- * - Identify important inputs/outputs.
- * Study Tip: Trace a tiny example through this method.
- */
+    // ===================== MANAGE DECKS ==========================
+
     public Scene manageDecksScene(Stage stage) {
-    BorderPane center = new BorderPane();
+        StudentLogger.enter("names#manageDecksScene");
 
-    // Left: list of decks
-    ListView<String> deckList = new ListView<>();
-    deckList.setItems(FXCollections.observableArrayList(storage.listDeckNames()));
-    center.setLeft(deckList);
+        // Toolbar
+        HBox toolbar = makeToolbar("Manage Decks");
 
-    // Right: list of cards for selected deck
-    ListView<String> cardList = new ListView<>();
-    center.setCenter(cardList);
+        // Card with two panes
+        VBox card = makeCard();
 
-    // --- inputs (Row 1) ---
-    TextField qField = new TextField();
-    qField.setPromptText("Question");
-    TextField aField = new TextField();
-    aField.setPromptText("Answer");
+        // Left: decks
+        ListView<String> deckList = new ListView<>();
+        deckList.setItems(FXCollections.observableArrayList(storage.listDeckNames()));
+        deckList.setPrefWidth(220);
 
-    HBox inputsRow = new HBox(8);
-    inputsRow.getChildren().addAll(qField, aField);
-    HBox.setHgrow(qField, Priority.ALWAYS);
-    HBox.setHgrow(aField, Priority.ALWAYS);
+        // Right: cards of selected deck
+        ListView<String> cardList = new ListView<>();
 
-    // --- buttons (Row 2) ---
-    Button add  = new Button("Add Card");
-    Button edit = new Button("Edit Card");
-    Button del  = new Button("Delete Card");
-    Button back = new Button("Back");
+        // Inputs row
+        TextField qField = new TextField();
+        qField.setPromptText("Question");
+        TextField aField = new TextField();
+        aField.setPromptText("Answer");
 
-    // Make labels readable (avoid truncation)
-    Button[] btns = { add, edit, del, back };
-    for (Button b : btns) b.setMinWidth(100);
+        HBox inputsRow = new HBox(8, qField, aField);
+        HBox.setHgrow(qField, Priority.ALWAYS);
+        HBox.setHgrow(aField, Priority.ALWAYS);
 
-    HBox buttonsRow = new HBox(10);
-    buttonsRow.setAlignment(Pos.CENTER_LEFT);
-    buttonsRow.getChildren().addAll(add, edit, del, back);
+        // Buttons row
+        Button add  = new Button("Add Card");
+        add.getStyleClass().add("primary");
+        Button edit = new Button("Edit Card");
+        Button del  = new Button("Delete Card");
+        Button back = new Button("Back");
+        back.getStyleClass().add("secondary");
+        for (Button b : new Button[]{add, edit, del, back}) b.setMinWidth(110);
 
-    // Stack rows vertically at the top
-    VBox top = new VBox(10);
-    top.getChildren().addAll(inputsRow, buttonsRow);
-    top.setPadding(new Insets(10));
-    center.setTop(top);
+        HBox buttonsRow = new HBox(8, add, edit, del, back);
+        buttonsRow.setAlignment(Pos.CENTER_LEFT);
 
-    // When a deck is selected, show its cards on the right
-    deckList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
-        if (newV != null) {
-            Deck d = storage.loadDeck(newV);
-            cardList.getItems().setAll(formatCards(d));
-        }
-    });
+        // Status banner
+        Label status = makeBanner();
 
-    // --- button behavior (unchanged logic you already had) ---
-    add.setOnAction(e -> {
-        String deckName = deckList.getSelectionModel().getSelectedItem();
-        if (deckName == null) return;
-        String q = qField.getText().trim();
-        String a = aField.getText().trim();
-        if (q.isEmpty() || a.isEmpty()) return;
+        // Two-column body
+        HBox body = new HBox(12, deckList, cardList);
+        HBox.setHgrow(cardList, Priority.ALWAYS);
 
-        Deck d = storage.loadDeck(deckName);
-        if (d == null) d = new Deck(deckName, new ArrayList<>());
-        d.getCards().add(new Flashcard(q, a));
-        storage.saveDeck(d);
+        // Assemble card
+        card.getChildren().addAll(inputsRow, buttonsRow, body, status);
 
-        qField.clear();
-        aField.clear();
-        cardList.getItems().setAll(formatCards(d));
-    });
-
-    edit.setOnAction(e -> {
-        String deckName = deckList.getSelectionModel().getSelectedItem();
-        int idx = cardList.getSelectionModel().getSelectedIndex();
-        if (deckName == null || idx < 0) return;
-
-        Deck d = storage.loadDeck(deckName);
-        if (d == null || idx >= d.getCards().size()) return;
-
-        Flashcard current = d.getCards().get(idx);
-
-        Dialog<Flashcard> dialog = new Dialog<>();
-        dialog.setTitle("Edit Card");
-        dialog.setHeaderText("Update the question and answer");
-
-        Label qL = new Label("Question:");
-        TextField qT = new TextField(current.getQuestion());
-        Label aL = new Label("Answer:");
-        TextField aT = new TextField(current.getAnswer());
-
-        GridPane gp = new GridPane();
-        gp.setHgap(8); gp.setVgap(8);
-        gp.addRow(0, qL, qT);
-        gp.addRow(1, aL, aT);
-
-        dialog.getDialogPane().setContent(gp);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        dialog.setResultConverter(bt -> {
-            if (bt == ButtonType.OK) {
-                return new Flashcard(qT.getText(), aT.getText());
+        // Selection -> load cards
+        deckList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) {
+                Deck d = storage.loadDeck(newV);
+                cardList.getItems().setAll(formatCards(d));
+                hideBanner(status);
             }
-            return null;
         });
 
-        Flashcard updated = dialog.showAndWait().orElse(null);
-        if (updated != null) {
-            current.setQuestion(updated.getQuestion());
-            current.setAnswer(updated.getAnswer());
+        // Actions
+        add.setOnAction(e -> {
+            String deckName = deckList.getSelectionModel().getSelectedItem();
+            if (deckName == null) { showError(status, "Select a deck first."); return; }
+            String q = qField.getText().trim();
+            String a = aField.getText().trim();
+            if (q.isEmpty() || a.isEmpty()) { showError(status, "Enter a question and answer."); return; }
+
+            Deck d = storage.loadDeck(deckName);
+            if (d == null) d = new Deck(deckName, new ArrayList<>());
+            d.getCards().add(new Flashcard(q, a));
+            storage.saveDeck(d);
+
+            qField.clear(); aField.clear();
+            cardList.getItems().setAll(formatCards(d));
+            showOk(status, "Card added.");
+        });
+
+        edit.setOnAction(e -> {
+            String deckName = deckList.getSelectionModel().getSelectedItem();
+            int idx = cardList.getSelectionModel().getSelectedIndex();
+            if (deckName == null) { showError(status, "Select a deck first."); return; }
+            if (idx < 0) { showError(status, "Select a card to edit."); return; }
+
+            Deck d = storage.loadDeck(deckName);
+            if (d == null || idx >= d.getCards().size()) return;
+
+            Flashcard current = d.getCards().get(idx);
+
+            Dialog<Flashcard> dialog = new Dialog<>();
+            dialog.setTitle("Edit Card");
+            dialog.setHeaderText("Update the question and answer");
+
+            Label qL = new Label("Question:");
+            TextField qT = new TextField(current.getQuestion());
+            Label aL = new Label("Answer:");
+            TextField aT = new TextField(current.getAnswer());
+
+            GridPane gp = new GridPane();
+            gp.setHgap(8); gp.setVgap(8);
+            gp.addRow(0, qL, qT);
+            gp.addRow(1, aL, aT);
+
+            dialog.getDialogPane().setContent(gp);
+            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+            dialog.setResultConverter(bt -> {
+                if (bt == ButtonType.OK) {
+                    return new Flashcard(qT.getText(), aT.getText());
+                }
+                return null;
+            });
+
+            Flashcard updated = dialog.showAndWait().orElse(null);
+            if (updated != null) {
+                current.setQuestion(updated.getQuestion());
+                current.setAnswer(updated.getAnswer());
+                storage.saveDeck(d);
+                cardList.getItems().setAll(formatCards(d));
+                showOk(status, "Card updated.");
+            }
+        });
+
+        del.setOnAction(e -> {
+            String deckName = deckList.getSelectionModel().getSelectedItem();
+            int idx = cardList.getSelectionModel().getSelectedIndex();
+            if (deckName == null) { showError(status, "Select a deck first."); return; }
+            if (idx < 0) { showError(status, "Select a card to delete."); return; }
+
+            Deck d = storage.loadDeck(deckName);
+            if (d == null || idx >= d.getCards().size()) return;
+
+            d.getCards().remove(idx);
             storage.saveDeck(d);
             cardList.getItems().setAll(formatCards(d));
-        }
-    });
+            showOk(status, "Card deleted.");
+        });
 
-    del.setOnAction(e -> {
-        String deckName = deckList.getSelectionModel().getSelectedItem();
-        int idx = cardList.getSelectionModel().getSelectedIndex();
-        if (deckName == null || idx < 0) return;
+        back.setOnAction(e -> stage.setScene(getPrimaryScene(stage)));
 
-        Deck d = storage.loadDeck(deckName);
-        if (d == null || idx >= d.getCards().size()) return;
+        VBox center = wrap(toolbar, card);
+        MacShell shell = new MacShell(this, stage);
+        return shell.sceneWith(center);
+    }
 
-        d.getCards().remove(idx);
-        storage.saveDeck(d);
-        cardList.getItems().setAll(formatCards(d));
-    });
+    // ======================= START QUIZ ==========================
 
-    back.setOnAction(e -> stage.setScene(getPrimaryScene(stage)));
-
-    MacShell shell = new MacShell(this, stage);
-    return shell.sceneWith(center);
-}
-
-
-/**
- * STUDENT NOTE: What does `startQuizScene()` do?
- * - Summarize the purpose inputFile your own words.
- * - Identify important inputs/outputs.
- * Study Tip: Trace a tiny example through this method.
- */
     public Scene startQuizScene(Stage stage) {
-        StudentLogger.enter("names#startQuizScene");  // we just entered this method
-        VBox center = new VBox(12);  // Object creation: why do we need a new instance here?
-        Label title = new Label("Start Quiz");  // Object creation: why do we need a new instance here?
-        title.getStyleClass().add("headline");  // We're adding to a collection; note the order & size.
-        ComboBox<String> deckPicker = new ComboBox<>();  // Object creation: why do we need a new instance here?
+        StudentLogger.enter("names#startQuizScene");
+
+        HBox toolbar = makeToolbar("Start Quiz");
+        VBox card = makeCard();
+
+        Label deckLabel = makeFieldLabel("Deck");
+        ComboBox<String> deckPicker = new ComboBox<>();
         deckPicker.getItems().setAll(storage.listDeckNames());
-        deckPicker.setPromptText("Select a deckObject to quiz");
+        deckPicker.setPromptText("Select a deck");
 
-        Button start = new Button("Start");  // Object creation: why do we need a new instance here?
-        Button back = new Button("Back");  // Object creation: why do we need a new instance here?
+        Button start = new Button("Start");
+        start.getStyleClass().add("primary");
+        Button back = new Button("Back");
+        back.getStyleClass().add("secondary");
 
-        HBox row = new HBox(8, start, back);  // Object creation: why do we need a new instance here?
+        HBox buttons = new HBox(8, back, start);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
 
-        start.setOnAction(exceptionObj -> {
+        Label status = makeBanner();
+
+        start.setOnAction(e -> {
             String selected = deckPicker.getSelectionModel().getSelectedItem();
-            if (selected == null) return;  // Check the condition; what cases pass/fail?
+            if (selected == null) { showError(status, "Choose a deck first."); return; }
             Deck d = storage.loadDeck(selected);
-            if (d == null || d.getCards().isEmpty()) return;  // Check the condition; what cases pass/fail?
-            QuizManager qm = new QuizManager(d);  // Object creation: why do we need a new instance here?
-            qm.shuffle(); // shuffle before quiz
+            if (d == null || d.getCards().isEmpty()) { showError(status, "That deck has no cards."); return; }
+            QuizManager qm = new QuizManager(d);
+            qm.shuffle();
             stage.setScene(quizScene(stage, qm));
         });
 
-        back.setOnAction(exceptionObj -> stage.setScene(getPrimaryScene(stage)));
+        back.setOnAction(e -> stage.setScene(getPrimaryScene(stage)));
 
-        center.getChildren().addAll(title, deckPicker, row);
-        MacShell shell = new MacShell(this, stage);  // Object creation: why do we need a new instance here?
-        StudentLogger.step("About to return from method.");  // check what value we return next
-        return shell.sceneWith(center);  // Return value: where is it used next?
+        card.getChildren().addAll(deckLabel, deckPicker, buttons, status);
+
+        VBox center = wrap(toolbar, card);
+        MacShell shell = new MacShell(this, stage);
+        StudentLogger.step("About to return from method.");
+        return shell.sceneWith(center);
     }
 
-/**
- * STUDENT NOTE: What does `quizScene()` do?
- * - Summarize the purpose inputFile your own words.
- * - Identify important inputs/outputs.
- * Study Tip: Trace a tiny example through this method.
- */
+    // ========================== QUIZ =============================
+
     private Scene quizScene(Stage stage, QuizManager qm) {
-        StudentLogger.enter("names#quizScene");  // we just entered this method
-        VBox center = new VBox(12);  // Object creation: why do we need a new instance here?
+        StudentLogger.enter("names#quizScene");
 
-        Label progress = new Label();  // Object creation: why do we need a new instance here?
-        Label question = new Label();  // Object creation: why do we need a new instance here?
-        question.getStyleClass().add("question-label");  // We're adding to a collection; note the order & size.
-        TextField answer = new TextField();  // Object creation: why do we need a new instance here?
-        answer.setPromptText("Type your answer here");
-        Button submit = new Button("Submit");  // Object creation: why do we need a new instance here?
-        Label feedback = new Label();  // Object creation: why do we need a new instance here?
+        HBox toolbar = makeToolbar("Quiz");
+        VBox card = makeCard();
 
-        Button next = new Button("Next");  // Object creation: why do we need a new instance here?
+        Label progress = new Label();
+        progress.getStyleClass().add("field-label");
+
+        Label question = new Label();
+        question.getStyleClass().add("question-label");
+
+        TextField answer = new TextField();
+        answer.setPromptText("Type your answer…");
+
+        Button submit = new Button("Submit");
+        submit.getStyleClass().add("primary");
+        Button next = new Button("Next");
+        next.getStyleClass().add("secondary");
         next.setDisable(true);
+
+        HBox buttons = new HBox(8, next, submit);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+
+        Label feedback = makeBanner(); // reuse banner styling
 
         Runnable refresh = () -> {
             progress.setText("Question " + (qm.getIndex() + 1) + " of " + qm.size());
             question.setText(qm.currentQuestion());
-            feedback.setText("");
+            hideBanner(feedback);
             answer.clear();
             submit.setDisable(false);
             next.setDisable(true);
         };
 
-        submit.setOnAction(exceptionObj -> {
+        submit.setOnAction(e -> {
             String a = answer.getText().trim();
             boolean correct = qm.submitAnswer(a);
-            feedback.setText(correct ? "Correct!" : ("Incorrect. Correct answer: " + qm.currentAnswer()));
+            if (correct) {
+                showOk(feedback, "Correct!");
+            } else {
+                showError(feedback, "Incorrect. Correct answer: " + qm.currentAnswer());
+            }
             submit.setDisable(true);
             next.setDisable(false);
         });
 
-        next.setOnAction(exceptionObj -> {
-            if (qm.hasNext()) {  // decision point — what happens inputFile each branch?
+        next.setOnAction(e -> {
+            if (qm.hasNext()) {
                 qm.next();
                 refresh.run();
             } else {
@@ -342,54 +344,114 @@ public class ScreenRouter {
 
         refresh.run();
 
-        center.getChildren().addAll(progress, question, answer, submit, feedback, next);
-        MacShell shell = new MacShell(this, stage);  // Object creation: why do we need a new instance here?
-        StudentLogger.step("About to return from method.");  // check what value we return next
-        return shell.sceneWith(center);  // Return value: where is it used next?
+        card.getChildren().addAll(progress, question, answer, buttons, feedback);
+
+        VBox center = wrap(toolbar, card);
+        MacShell shell = new MacShell(this, stage);
+        StudentLogger.step("About to return from method.");
+        return shell.sceneWith(center);
     }
 
-/**
- * STUDENT NOTE: What does `resultsScene()` do?
- * - Summarize the purpose inputFile your own words.
- * - Identify important inputs/outputs.
- * Study Tip: Trace a tiny example through this method.
- */
-    private Scene resultsScene(Stage stage, QuizManager qm) {
-        StudentLogger.enter("names#resultsScene");  // we just entered this method
-        VBox center = new VBox(12);  // Object creation: why do we need a new instance here?
-        Label done = new Label("Quiz Finished!");  // Object creation: why do we need a new instance here?
-        done.getStyleClass().add("headline");  // We're adding to a collection; note the order & size.
-        Label score = new Label("Score: " + qm.getScore() + " / " + qm.size());  // Object creation: why do we need a new instance here?
-        Button retry = new Button("Retake (same deckObject, reshuffle)");  // Object creation: why do we need a new instance here?
-        Button menu = new Button("Main Menu");  // Object creation: why do we need a new instance here?
+    // ========================= RESULTS ===========================
 
-        retry.setOnAction(exceptionObj -> {
+    private Scene resultsScene(Stage stage, QuizManager qm) {
+        StudentLogger.enter("names#resultsScene");
+
+        HBox toolbar = makeToolbar("Results");
+        VBox card = makeCard();
+
+        Label done = new Label("Quiz Finished!");
+        done.getStyleClass().add("headline");
+
+        Label score = new Label("Score: " + qm.getScore() + " / " + qm.size());
+
+        Button retry = new Button("Retake");
+        retry.getStyleClass().add("primary");
+        Button menu = new Button("Main Menu");
+        menu.getStyleClass().add("secondary");
+
+        HBox buttons = new HBox(8, menu, retry);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+
+        retry.setOnAction(e -> {
             qm.resetAndShuffle();
             stage.setScene(quizScene(stage, qm));
         });
-        menu.setOnAction(exceptionObj -> stage.setScene(getPrimaryScene(stage)));
+        menu.setOnAction(e -> stage.setScene(getPrimaryScene(stage)));
 
-        center.getChildren().addAll(done, score, retry, menu);
-        MacShell shell = new MacShell(this, stage);  // Object creation: why do we need a new instance here?
-        StudentLogger.step("About to return from method.");  // check what value we return next
-        return shell.sceneWith(center);  // Return value: where is it used next?
+        card.getChildren().addAll(done, score, buttons);
+
+        VBox center = wrap(toolbar, card);
+        MacShell shell = new MacShell(this, stage);
+        StudentLogger.step("About to return from method.");
+        return shell.sceneWith(center);
     }
 
-    // Utility: format cards as "Q -> A" strings for itemsList view
-/**
- * STUDENT NOTE: What does `formatCards()` do?
- * - Summarize the purpose inputFile your own words.
- * - Identify important inputs/outputs.
- * Study Tip: Trace a tiny example through this method.
- */
+    // ========================= HELPERS ===========================
+
+    private HBox makeToolbar(String titleText) {
+        HBox bar = new HBox(8);
+        bar.getStyleClass().add("toolbar");
+        Label title = new Label(titleText);
+        title.getStyleClass().add("headline");
+        bar.getChildren().add(title);
+        return bar;
+    }
+
+    private VBox makeCard() {
+        VBox card = new VBox(12);
+        card.getStyleClass().add("card");
+        card.setFillWidth(true);
+        return card;
+    }
+
+    private Label makeFieldLabel(String text) {
+        Label l = new Label(text);
+        l.getStyleClass().add("field-label");
+        return l;
+    }
+
+    private Label makeBanner() {
+        Label b = new Label();
+        b.getStyleClass().add("banner");
+        b.setManaged(false);
+        b.setVisible(false);
+        return b;
+    }
+
+    private void showError(Label banner, String msg) {
+        banner.getStyleClass().setAll("banner", "error");
+        banner.setText(msg);
+        banner.setManaged(true);
+        banner.setVisible(true);
+    }
+
+    private void showOk(Label banner, String msg) {
+        banner.getStyleClass().setAll("banner", "ok");
+        banner.setText(msg);
+        banner.setManaged(true);
+        banner.setVisible(true);
+    }
+
+    private void hideBanner(Label banner) {
+        banner.setManaged(false);
+        banner.setVisible(false);
+    }
+
+    private VBox wrap(Region toolbar, Region card) {
+        VBox center = new VBox(12, toolbar, card);
+        center.setPadding(new Insets(24));
+        return center;
+    }
+
     private List<String> formatCards(Deck d) {
-        StudentLogger.enter("names#formatCards");  // we just entered this method
-        List<String> outputFile = new ArrayList<>();  // Object creation: why do we need a new instance here?
-        if (d == null) return outputFile;  // Check the condition; what cases pass/fail?
-        for (var c : d.getCards()) {  // loop — predict how many times this runs.
-            outputFile.add("Q: " + c.getQuestion() + "  →  A: " + c.getAnswer());  // We're adding to a collection; note the order & size.
+        StudentLogger.enter("names#formatCards");
+        List<String> out = new ArrayList<>();
+        if (d == null) return out;
+        for (var c : d.getCards()) {
+            out.add("Q: " + c.getQuestion() + "  →  A: " + c.getAnswer());
         }
-        StudentLogger.step("About to return from method.");  // check what value we return next
-        return outputFile;  // Return value: where is it used next?
+        StudentLogger.step("About to return from method.");
+        return out;
     }
 }

@@ -1,52 +1,112 @@
-/* Simple, clean student theme */
+/* ============== Base / Typography ============== */
 .root {
     -fx-accent: #0A84FF; /* macOS blue */
-    -fx-font-size: 13px;
+    -fx-font-size: 15px;
     -fx-font-family: "SF Pro Text", ".SF NS Text", "Helvetica Neue", "Helvetica", "Arial";
+    -fx-font-smoothing-type: gray;
 }
 
-
+/* Buttons (base) */
 .button {
-    -fx-padding: 8 14 8 14;
-    -fx-background-radius: 8;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 10;
 }
 
+/* Inputs */
+.text-field {
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-padding: 8 12 8 12;
+}
 
+/* Headings / labels */
+.headline {
+    -fx-font-size: 22px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1c1c1e;
+}
+.field-label {
+    -fx-text-fill: #6e6e73;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-padding: 0 0 2 0;
+}
 .question-label {
-    -fx-font-size: 16px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
 
-.list-view {
-    -fx-background-insets: 0;
+/* Toolbar strip */
+.toolbar {
+    -fx-padding: 8 12 8 12;
+    -fx-background-color: rgba(0,0,0,0.03);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0,0,0,0.05);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-spacing: 8;
 }
 
-.text-field {
-    -fx-background-radius: 8;
-    -fx-padding: 6 10 6 10;
+/* Card panel */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0.2, 0, 2);
+    -fx-border-color: rgba(0,0,0,0.06);
+    -fx-border-radius: 12;
 }
 
+/* Inline banners (status) */
+.banner {
+    -fx-padding: 10 12 10 12;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-font-weight: 600;
+}
+.banner.error {
+    -fx-background-color: rgba(255,59,48,0.12);
+    -fx-border-color: rgba(255,59,48,0.35);
+    -fx-border-width: 1;
+    -fx-text-fill: #FF3B30;
+}
+.banner.ok {
+    -fx-background-color: rgba(50,215,75,0.12);
+    -fx-border-color: rgba(50,215,75,0.35);
+    -fx-border-width: 1;
+    -fx-text-fill: #34C759;
+}
 
-/* ===== macOS-like Sidebar ===== */
-/* ===== Sidebar container ===== */
+/* Primary / Secondary buttons */
+.button.primary {
+    -fx-background-color: -fx-accent;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+}
+.button.primary:hover { -fx-opacity: 0.95; }
+
+.button.secondary {
+    -fx-background-color: rgba(0,0,0,0.06);
+    -fx-text-fill: #1c1c1e;
+}
+.button.secondary:hover { -fx-background-color: rgba(0,0,0,0.10); }
+
+/* ============== Sidebar ============== */
 .sidebar {
-    -fx-background-color:
-        linear-gradient(to bottom, white 0%, #f7f7f9 100%);
+    -fx-background-color: linear-gradient(to bottom, white 0%, #f7f7f9 100%);
     -fx-padding: 16 12 16 12;
     -fx-spacing: 8;
-    -fx-border-color: rgba(0,0,0,0.08) transparent rgba(0,0,0,0.08) transparent;
-    -fx-border-width: 0 0 1 0; /* subtle bottom hairline if sidebar is top-aligned */
+    -fx-border-color: rgba(0,0,0,0.06);
+    -fx-border-width: 0 1 0 0; /* hairline on right edge */
+    -fx-min-width: 260;
 }
-
-.sidebar .sidebar-title {
+.sidebar-title {
     -fx-font-size: 20px;
     -fx-font-weight: 600;
     -fx-text-fill: #1c1c1e;
     -fx-padding: 0 8 8 8;
 }
-
-/* Section header ("Library") */
-.sidebar .sidebar-section {
+.sidebar-section {
     -fx-text-fill: #6e6e73;
     -fx-font-size: 11px;
     -fx-font-weight: 600;
@@ -55,129 +115,74 @@
     -fx-opacity: 0.9;
 }
 
-/* ===== Sidebar item buttons ===== */
-.sidebar .sidebar-item {
+/* Sidebar items (buttons) */
+.sidebar .button.sidebar-item {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 10;
-    -fx-padding: 6 10 6 10;
-    -fx-alignment: CENTER_LEFT;
-    -fx-text-fill: #1c1c1e;
-    -fx-cursor: hand;
-    -fx-effect: null;
-    -fx-border-color: transparent;
-}
-
-.sidebar .sidebar-item:hover {
-    -fx-background-color: rgba(0, 0, 0, 0.05);
-}
-
-/* Selected “pill” */
-.sidebar .sidebar-item-selected {
-    -fx-background-color: rgba(10,132,255,0.15);
-    -fx-text-fill: #0A84FF;
-    -fx-background-radius: 10;
-    -fx-border-color: rgba(10,132,255,0.35);
-    -fx-border-width: 1;
-}
-
-/* Base for sidebar buttons */
-.sidebar .button.sidebar-item {
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;      /* important */
-    -fx-background-radius: 10;
-    -fx-padding: 6 10 6 10;
+    -fx-padding: 8 10 8 8;
     -fx-alignment: CENTER_LEFT;
     -fx-cursor: hand;
     -fx-border-color: transparent;
 }
-
-/* Hover (optional) */
 .sidebar .button.sidebar-item:hover {
     -fx-background-color: rgba(0,0,0,0.05);
 }
 
-/* 🔹 Selected pill — target the BUTTON */
+/* 🔹 Selected “pill” */
 .sidebar .button.sidebar-item.sidebar-item-selected {
     -fx-background-color: rgba(10,132,255,0.18);
-    -fx-background-insets: 0;      /* important */
+    -fx-background-insets: 0;
     -fx-background-radius: 10;
     -fx-border-color: rgba(10,132,255,0.35);
     -fx-border-width: 1;
 }
-
-/* Make the icon/label turn blue — your text lives inside the graphic HBox */
 .sidebar .button.sidebar-item.sidebar-item-selected .label {
     -fx-text-fill: #0A84FF;
     -fx-font-weight: 600;
 }
+/* Icons inherit color */
+.sidebar .sidebar-icon { -fx-text-fill: inherit; }
 
-/* If you defined .sidebar-icon separately, let it inherit the color */
-.sidebar .sidebar-icon {
-    -fx-text-fill: inherit;
+/* Lists */
+.list-view, .table-view { -fx-background-insets: 0; }
+.list-cell, .table-row-cell {
+    -fx-padding: 6 10 6 10;
+    -fx-border-color: rgba(0,0,0,0.06);
+    -fx-border-width: 0 0 1 0;
 }
-
-/* Center text styles */
-.headline {
-    -fx-font-size: 22px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #1c1c1e;
+.list-view:focused .list-cell:filled:selected,
+.table-row-cell:filled:selected {
+    -fx-background-color: rgba(10,132,255,0.18);
 }
-
-.subtle {
-    -fx-text-fill: #6e6e73;
-}
-
-
-/* Center container cards (light Apple-like look) */
-.toolbar {
-    -fx-padding: 8;
-    -fx-background-color: rgba(0,0,0,0.03);
-    -fx-background-radius: 10;
+/* Titlebar wrapper (below the menu bar) */
+.titlebar {
+    -fx-background-color: linear-gradient(to bottom, rgba(0,0,0,0.03), rgba(0,0,0,0.00));
     -fx-border-color: rgba(0,0,0,0.05);
-    -fx-border-radius: 10;
-    -fx-border-width: 1;
-    -fx-spacing: 8;
+    -fx-border-width: 0 0 1 0;
 }
 
-
-/* ===== Readability Upgrade (Larger UI) ===== */
-.root {
-    -fx-font-family: "Segoe UI", "SF Pro Text", "Roboto", Arial, sans-serif;
-    -fx-font-size: 16px; /* base font size */
+.titlebar-title {
+    -fx-text-fill: #6e6e73;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+.sheet .dialog-pane {
+  -fx-background-color: white;
+  -fx-background-radius: 14;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0.3, 0, 6);
+  -fx-padding: 16;
 }
 
-.button {
-    -fx-font-size: 15px;
-    -fx-padding: 10 16 10 16;
+/* Preferences slider polish */
+.slider {
+    -fx-pref-width: 180;
 }
-
-.text-field, .combo-box, .list-view {
-    -fx-font-size: 15px;
+.slider .track {
+    -fx-background-color: rgba(0,0,0,0.1);
+    -fx-background-radius: 3;
 }
-
-.text-field {
-    -fx-background-radius: 10;
-    -fx-padding: 10 12 10 12;
-}
-
-.combo-box {
+.slider .thumb {
+    -fx-background-color: -fx-accent;
     -fx-background-radius: 10;
 }
-
-.list-view .list-cell {
-    -fx-font-size: 15px;
-    -fx-padding: 8 10 8 10;
-}
-
-/* Sidebar tweaks for readability */
-.sidebar {
-    -fx-min-width: 260; /* wider for text */
-}
-.sidebar-title { -fx-font-size: 20px; }
-.sidebar-icon { -fx-font-size: 14px; }
-.sidebar-item { -fx-padding: 10 10 10 8; }
-
-/* Headings and quiz text */
-.headline { -fx-font-size: 22px; -fx-font-weight: bold; }
-.question-label { -fx-font-size: 20px; -fx-font-weight: bold; }

@@ -1,0 +1,18 @@
+/* Simple dark variant; toggle by adding this sheet at runtime */
+.root { -fx-base: #1c1c1e; -fx-background: #1c1c1e; -fx-text-fill: #f2f2f7; }
+.toolbar { -fx-background-color: rgba(255,255,255,0.06); -fx-border-color: rgba(255,255,255,0.06); }
+.card {
+    -fx-background-color: #2c2c2e;
+    -fx-border-color: rgba(255,255,255,0.08);
+}
+.field-label, .subtle, .sidebar-section { -fx-text-fill: #9a9aa0; }
+.sidebar {
+    -fx-background-color: linear-gradient(to bottom, #242426, #1f1f21);
+    -fx-border-color: rgba(255,255,255,0.08);
+}
+.sidebar .button.sidebar-item:hover { -fx-background-color: rgba(255,255,255,0.06); }
+.sidebar .button.sidebar-item.sidebar-item-selected {
+    -fx-background-color: rgba(10,132,255,0.28);
+    -fx-border-color: rgba(10,132,255,0.55);
+}
+.button.secondary { -fx-background-color: rgba(255,255,255,0.10); -fx-text-fill: #f2f2f7; }
