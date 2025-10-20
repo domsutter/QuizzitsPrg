@@ -10,4 +10,5 @@ quizgame\util\StudentLogger.class
 quizgame\model\Flashcard.class
 quizgame\Styles.class
 quizgame\MacShell.class
+quizgame\SidebarMain$Active.class
 quizgame\model\QuizManager.class
