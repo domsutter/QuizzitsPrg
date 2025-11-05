@@ -10,6 +10,8 @@ import quizgame.util.StudentLogger;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Collections;
+
 public class Deck {
     private String name;
     private List<Flashcard> cards = new ArrayList<>();  
@@ -43,4 +45,16 @@ public class Deck {
     public void setCards(List<Flashcard> cards) {
         StudentLogger.enter("names#setCards");  
  this.cards = cards; }
+
+    //Shuffle cards
+    public void shuffle() {
+        StudentLogger.enter("names#shuffle");
+        if (cards == null || cards.isEmpty()) {
+            StudentLogger.step("No cards to shuffle.");
+            return;
+        }
+        Collections.shuffle(cards);
+        StudentLogger.step("Cards have been shuffled.");
+    }
+
 }
