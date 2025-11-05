@@ -13,15 +13,16 @@ import quizgame.model.Deck;
 import quizgame.model.Flashcard;
 import quizgame.model.QuizManager;
 import quizgame.storage.StorageService;
-
+import javafx.animation.RotateTransition;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
-
+import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,11 +131,12 @@ public class ScreenRouter {
         add.getStyleClass().add("primary");
         Button edit = new Button("Edit Card");
         Button del  = new Button("Delete Card");
+        Button study = new Button("Study Deck");
         Button back = new Button("Back");
         back.getStyleClass().add("secondary");
-        for (Button b : new Button[]{add, edit, del, back}) b.setMinWidth(110);
+        for (Button b : new Button[]{add, edit, del, study, back}) b.setMinWidth(110);
 
-        HBox buttonsRow = new HBox(8, add, edit, del, back);
+        HBox buttonsRow = new HBox(8, add, edit, del, study, back);
         buttonsRow.setAlignment(Pos.CENTER_LEFT);
 
         // Status banner
@@ -234,10 +236,167 @@ public class ScreenRouter {
             showOk(status, "Card deleted.");
         });
 
+        // 🧠 Study Deck button
+        study.setOnAction(e -> {
+            String deckName = deckList.getSelectionModel().getSelectedItem();
+            if (deckName == null) {
+                showError(status, "Select a deck first.");
+                return;
+            }
+            Deck d = storage.loadDeck(deckName);
+            if (d == null || d.getCards().isEmpty()) {
+                showError(status, "Deck is empty.");
+                return;
+            }
+            stage.setScene(studyDeckScene(stage, d));
+        });
+
         back.setOnAction(e -> stage.setScene(getPrimaryScene(stage)));
 
         VBox center = wrap(toolbar, card);
         MacShell shell = new MacShell(this, stage);
+        return shell.sceneWith(center);
+    }
+
+    // ====================== STUDY DECK ==========================
+
+    public Scene studyDeckScene(Stage stage, Deck deck) {
+        StudentLogger.enter("names#studyDeckScene");
+
+        HBox toolbar = makeToolbar("Study: " + deck.getName());
+        VBox card = makeCard();
+
+        Label question = new Label();
+        question.getStyleClass().add("question-label");
+
+        Label answer = new Label();
+        answer.getStyleClass().add("answer-label");
+        answer.setVisible(false);
+
+        Button show = new Button("Show Answer");
+        show.getStyleClass().add("primary");
+        Button next = new Button("Next");
+        next.getStyleClass().add("secondary");
+        Button shuffle = new Button("Shuffle");
+        shuffle.getStyleClass().add("secondary");
+        Button back = new Button("Back");
+        back.getStyleClass().add("secondary");
+
+        HBox buttons = new HBox(8, back, shuffle, next, show);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+
+        Label status = makeBanner();
+
+        // Internal state
+        final int[] index = {0};
+
+        Runnable refresh = () -> {
+            if (deck.getCards().isEmpty()) {
+                question.setText("This deck has no cards.");
+                answer.setVisible(false);
+                return;
+            }
+            Flashcard c = deck.getCards().get(index[0]);
+            question.setText("Q: " + c.getQuestion());
+            answer.setText("A: " + c.getAnswer());
+            answer.setVisible(false);
+        };
+
+        show.setOnAction(e -> {
+            if (answer.isVisible()) return;
+
+            RotateTransition flip1 = new RotateTransition(Duration.millis(150), card);
+            flip1.setFromAngle(0);
+            flip1.setToAngle(90);
+            flip1.setAxis(Rotate.Y_AXIS);
+
+            RotateTransition flip2 = new RotateTransition(Duration.millis(150), card);
+            flip2.setFromAngle(-90);
+            flip2.setToAngle(0);
+            flip2.setAxis(Rotate.Y_AXIS);
+
+            flip1.setOnFinished(evt -> {
+                answer.setVisible(true);
+                question.setVisible(false);
+                flip2.play();
+            });
+
+            flip2.setOnFinished(evt -> {
+                show.setText("Show Question");
+            });
+
+            flip1.play();
+        });
+
+        show.setOnAction(e -> {
+            if (question.isVisible()) {
+                // Flip to answer
+                RotateTransition flip1 = new RotateTransition(Duration.millis(150), card);
+                flip1.setFromAngle(0);
+                flip1.setToAngle(90);
+                flip1.setAxis(Rotate.Y_AXIS);
+
+                RotateTransition flip2 = new RotateTransition(Duration.millis(150), card);
+                flip2.setFromAngle(-90);
+                flip2.setToAngle(0);
+                flip2.setAxis(Rotate.Y_AXIS);
+
+                flip1.setOnFinished(evt -> {
+                    question.setVisible(false);
+                    answer.setVisible(true);
+                    flip2.play();
+                });
+
+                flip2.setOnFinished(evt -> show.setText("Show Question"));
+                flip1.play();
+            } else {
+                // Flip back to question
+                RotateTransition flip1 = new RotateTransition(Duration.millis(150), card);
+                flip1.setFromAngle(0);
+                flip1.setToAngle(90);
+                flip1.setAxis(Rotate.Y_AXIS);
+
+                RotateTransition flip2 = new RotateTransition(Duration.millis(150), card);
+                flip2.setFromAngle(-90);
+                flip2.setToAngle(0);
+                flip2.setAxis(Rotate.Y_AXIS);
+
+                flip1.setOnFinished(evt -> {
+                    answer.setVisible(false);
+                    question.setVisible(true);
+                    flip2.play();
+                });
+
+                flip2.setOnFinished(evt -> show.setText("Show Answer"));
+                flip1.play();
+            }
+        });
+
+        next.setOnAction(e -> {
+            if (!deck.getCards().isEmpty()) {
+                index[0] = (index[0] + 1) % deck.getCards().size();
+                refresh.run();
+            }
+        });
+
+        shuffle.setOnAction(e -> {
+            deck.shuffle(); // uses your Deck.shuffle() method
+            storage.saveDeck(deck);
+            showOk(status, "Deck shuffled!");
+            index[0] = 0;
+            refresh.run();
+        });
+
+
+        back.setOnAction(e -> stage.setScene(manageDecksScene(stage)));
+
+        refresh.run();
+
+        card.getChildren().addAll(question, answer, buttons, status);
+
+        VBox center = wrap(toolbar, card);
+        MacShell shell = new MacShell(this, stage);
+        StudentLogger.step("About to return from method.");
         return shell.sceneWith(center);
     }
 
