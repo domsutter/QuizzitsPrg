@@ -24,8 +24,11 @@ import javafx.scene.layout.*;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ScreenRouter {
 
@@ -33,12 +36,51 @@ public class ScreenRouter {
 
     // =========================== HOME ============================
 
+    // public Scene getPrimaryScene(Stage stage) {
+    //     StudentLogger.enter("names#getPrimaryScene");
+    //     // Let SidebarMain build a basic welcome scene via MacShell
+    //     StudentLogger.step("About to return from method.");
+    //     return new SidebarMain(this).build(stage);
+    // }
+
     public Scene getPrimaryScene(Stage stage) {
-        StudentLogger.enter("names#getPrimaryScene");
-        // Let SidebarMain build a basic welcome scene via MacShell
-        StudentLogger.step("About to return from method.");
-        return new SidebarMain(this).build(stage);
-    }
+    StudentLogger.enter("names#getPrimaryScene");
+
+    // Let SidebarMain build a basic welcome scene via MacShell
+    SidebarMain sidebarMain = new SidebarMain(this);
+
+    // Toolbar for Home Page
+    HBox toolbar = makeToolbar("Home");
+
+    // Card for displaying decks
+    VBox card = makeCard();
+    Label welcomeLabel = new Label("Welcome! Choose a deck to study.");
+
+    // List of available decks
+    ListView<String> deckList = new ListView<>();
+    deckList.setItems(FXCollections.observableArrayList(storage.listDeckNames()));
+    deckList.setPrefHeight(200);
+
+    // When a deck is selected, navigate to study deck scene
+    deckList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+        if (newVal != null) {
+            // Load the selected deck and navigate to study scene
+            Deck selectedDeck = storage.loadDeck(newVal);
+            if (selectedDeck != null) {
+                stage.setScene(studyDeckScene(stage, selectedDeck));
+            }
+        }
+    });
+
+    // Card setup
+    card.getChildren().addAll(welcomeLabel, deckList);
+    
+    VBox center = wrap(toolbar, card);
+    MacShell shell = new MacShell(this, stage);
+    StudentLogger.step("About to return from method.");
+    return shell.sceneWith(center);
+}
+
 
     // ====================== CREATE DECK ==========================
 
@@ -132,12 +174,12 @@ public class ScreenRouter {
         add.getStyleClass().add("primary");
         Button edit = new Button("Edit Card");
         Button del  = new Button("Delete Card");
-        Button study = new Button("Study Deck");
+        Button deleteDeck = new Button("Delete Deck");
         Button back = new Button("Back");
         back.getStyleClass().add("secondary");
-        for (Button b : new Button[]{add, edit, del, study, back}) b.setMinWidth(110);
+        for (Button b : new Button[]{add, edit, del, deleteDeck, back}) b.setMinWidth(130);
 
-        HBox buttonsRow = new HBox(8, add, edit, del, study, back);
+        HBox buttonsRow = new HBox(8, add, edit, del, deleteDeck, back);
         buttonsRow.setAlignment(Pos.CENTER_LEFT);
 
         // Status banner
@@ -237,27 +279,45 @@ public class ScreenRouter {
             showOk(status, "Card deleted.");
         });
 
-        // 🧠 Study Deck button
-        study.setOnAction(e -> {
+        // Delete Deck button
+        deleteDeck.setOnAction(e -> {
             String deckName = deckList.getSelectionModel().getSelectedItem();
             if (deckName == null) {
-                showError(status, "Select a deck first.");
+                showError(status, "Select a deck to delete.");
                 return;
             }
-            Deck d = storage.loadDeck(deckName);
-            if (d == null || d.getCards().isEmpty()) {
-                showError(status, "Deck is empty.");
-                return;
-            }
-            stage.setScene(studyDeckScene(stage, d));
+
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Delete Deck");
+            confirm.setHeaderText("Delete deck \"" + deckName + "\"?");
+            confirm.setContentText("This will permanently remove the deck and all its cards.");
+
+            confirm.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    File decksDir = new File(System.getProperty("user.home"), ".quizzits/decks");
+                    File deckFile = new File(decksDir, deckName + ".json");
+
+                    if (deckFile.exists() && deckFile.delete()) {
+                        deckList.getItems().remove(deckName);
+                        cardList.getItems().clear();
+                        showOk(status, "Deck deleted successfully.");
+                    } else {
+                        showError(status, "Failed to delete deck file.");
+                    }
+                }
+            });
         });
 
+        // Back button
         back.setOnAction(e -> stage.setScene(getPrimaryScene(stage)));
 
         VBox center = wrap(toolbar, card);
         MacShell shell = new MacShell(this, stage);
+        StudentLogger.step("About to return from method.");
         return shell.sceneWith(center);
+        
     }
+
 
     // ====================== STUDY DECK ==========================
 
@@ -332,12 +392,12 @@ public class ScreenRouter {
         show.setOnAction(e -> {
             if (question.isVisible()) {
                 // Flip to answer
-                RotateTransition flip1 = new RotateTransition(Duration.millis(150), card);
+                RotateTransition flip1 = new RotateTransition(Duration.millis(300), card);
                 flip1.setFromAngle(0);
                 flip1.setToAngle(90);
                 flip1.setAxis(Rotate.Y_AXIS);
 
-                RotateTransition flip2 = new RotateTransition(Duration.millis(150), card);
+                RotateTransition flip2 = new RotateTransition(Duration.millis(300), card);
                 flip2.setFromAngle(-90);
                 flip2.setToAngle(0);
                 flip2.setAxis(Rotate.Y_AXIS);
@@ -352,12 +412,12 @@ public class ScreenRouter {
                 flip1.play();
             } else {
                 // Flip back to question
-                RotateTransition flip1 = new RotateTransition(Duration.millis(150), card);
+                RotateTransition flip1 = new RotateTransition(Duration.millis(300), card);
                 flip1.setFromAngle(0);
                 flip1.setToAngle(90);
                 flip1.setAxis(Rotate.Y_AXIS);
 
-                RotateTransition flip2 = new RotateTransition(Duration.millis(150), card);
+                RotateTransition flip2 = new RotateTransition(Duration.millis(300), card);
                 flip2.setFromAngle(-90);
                 flip2.setToAngle(0);
                 flip2.setAxis(Rotate.Y_AXIS);
@@ -375,15 +435,36 @@ public class ScreenRouter {
 
         next.setOnAction(e -> {
             if (!deck.getCards().isEmpty()) {
+                // Move to the next card
                 index[0] = (index[0] + 1) % deck.getCards().size();
-                refresh.run();
+
+                // Refresh the card content and make sure question is visible
+                Flashcard c = deck.getCards().get(index[0]);
+                question.setText("Q: " + c.getQuestion());
+                answer.setText("A: " + c.getAnswer());
+                question.setVisible(true);
+                answer.setVisible(false);
+
+                // Reset the "Show Answer" button text
+                show.setText("Show Answer");
             }
         });
+
 
         shuffle.setOnAction(e -> {
             deck.shuffle();
             storage.saveDeck(deck);
             showOk(status, "Deck shuffled!");
+
+            index[0] = 0;
+            if (!deck.getCards().isEmpty()) {
+                Flashcard c = deck.getCards().get(index[0]);
+                question.setText("Q: " + c.getQuestion());
+                answer.setText("A: " + c.getAnswer());
+                question.setVisible(true);  // always show question
+                answer.setVisible(false);   // hide answer
+                show.setText("Show Answer"); // reset button
+            }
 
             
             PauseTransition pause = new PauseTransition(Duration.seconds(2));
@@ -391,8 +472,8 @@ public class ScreenRouter {
             pause.setOnFinished(evt -> {
                 status.setText("");
                 status.setVisible(false);
-                status.getStyleClass().remove("ok"); // <-- remove green style if applied
-                status.setStyle(""); // <-- reset inline styles if any
+                status.getStyleClass().remove("ok");
+                status.setStyle("");
             });
             pause.play();
 
@@ -401,7 +482,7 @@ public class ScreenRouter {
         });
 
 
-        back.setOnAction(e -> stage.setScene(manageDecksScene(stage)));
+        back.setOnAction(e -> stage.setScene(getPrimaryScene(stage)));
 
         refresh.run();
 
@@ -482,7 +563,7 @@ public class ScreenRouter {
         HBox buttons = new HBox(8, next, submit);
         buttons.setAlignment(Pos.CENTER_RIGHT);
 
-        Label feedback = makeBanner(); // reuse banner styling
+        Label feedback = makeBanner();
 
         Runnable refresh = () -> {
             progress.setText("Question " + (qm.getIndex() + 1) + " of " + qm.size());

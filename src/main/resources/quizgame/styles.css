@@ -12,6 +12,11 @@
     -fx-background-radius: 10;
 }
 
+.button:hover {
+    -fx-cursor: hand;
+    -fx-opacity: 0.95;
+}
+
 /* Inputs */
 .text-field {
     -fx-background-radius: 10;
@@ -83,13 +88,18 @@
     -fx-text-fill: white;
     -fx-font-weight: 600;
 }
-.button.primary:hover { -fx-opacity: 0.95; }
+.button.primary:hover { 
+    -fx-cursor: hand;
+    -fx-opacity: 0.95; }
 
 .button.secondary {
     -fx-background-color: rgba(0,0,0,0.06);
     -fx-text-fill: #1c1c1e;
+    -fx-cursor: hand;
 }
-.button.secondary:hover { -fx-background-color: rgba(0,0,0,0.10); }
+.button.secondary:hover { 
+    -fx-cursor: hand;
+    -fx-background-color: rgba(0,0,0,0.10); }
 
 /* ============== Sidebar ============== */
 .sidebar {
@@ -185,4 +195,9 @@
 .slider .thumb {
     -fx-background-color: -fx-accent;
     -fx-background-radius: 10;
+}
+
+.list-cell:hover {
+    -fx-background-color: #e0e0e0;
+    -fx-cursor: hand;
 }
