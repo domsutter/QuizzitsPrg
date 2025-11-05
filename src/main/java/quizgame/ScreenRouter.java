@@ -13,6 +13,7 @@ import quizgame.model.Deck;
 import quizgame.model.Flashcard;
 import quizgame.model.QuizManager;
 import quizgame.storage.StorageService;
+import javafx.animation.PauseTransition;
 import javafx.animation.RotateTransition;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -380,9 +381,21 @@ public class ScreenRouter {
         });
 
         shuffle.setOnAction(e -> {
-            deck.shuffle(); // uses your Deck.shuffle() method
+            deck.shuffle();
             storage.saveDeck(deck);
             showOk(status, "Deck shuffled!");
+
+            
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(evt -> status.setText(""));
+            pause.setOnFinished(evt -> {
+                status.setText("");
+                status.setVisible(false);
+                status.getStyleClass().remove("ok"); // <-- remove green style if applied
+                status.setStyle(""); // <-- reset inline styles if any
+            });
+            pause.play();
+
             index[0] = 0;
             refresh.run();
         });
