@@ -2,7 +2,12 @@
 
 A simple flashcard & quiz app built for **CIS 1512**. It's intentionally small and heavily commented so it's easy to learn from.
 
-## Quick Start in NetBeans
+## Requirements
+1. Java 17+
+2. Maven 3.8+
+3. NetBeans 19+ (or any IDE with Maven + JavaFX support)
+
+## How to Run (NetBeans)
 1. **File → Open Project…** and select this folder (`quizzits-netbeans`).
 2. Right‑click the project → **Clean and Build**.
 3. Right‑click the project → **Run** (or Run → Run Project).
