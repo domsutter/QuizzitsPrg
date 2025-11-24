@@ -1,4 +1,4 @@
-# Quizzits (Student Edition) — NetBeans Maven JavaFX
+# Quizzits — NetBeans Maven JavaFX
 
 A simple flashcard & quiz app built for **CIS 1512**. It's intentionally small and heavily commented so it's easy to learn from.
 
